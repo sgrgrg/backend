@@ -17,12 +17,13 @@ dotenv.config();
 const app = express();
 // Enable CORS for all routes
 app.use(cors({
-    origin: [ 'https://frontend-production-0bd9.up.railway.app'],
+    origin: [ 'https://coffeehouse-1.onrender.com','https://coffeehouse-4yii.onrender.com','http://localhost:5173'],
     methods: ['GET', 'POST', 'PUT', 'DELETE','PATCH'], // Allowed methods
     allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
   }));
   
 // Middleware
+app.use(cors());
 app.use(bodyParser.json());
 app.use("/api/banner", bannerRoute);
 app.use("/uploads", express.static("uploads"));
