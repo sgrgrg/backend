@@ -23,7 +23,6 @@ app.use(cors({
   }));
   
 // Middleware
-app.use(cors());
 app.use(bodyParser.json());
 app.use("/api/banner", bannerRoute);
 app.use("/uploads", express.static("uploads"));
