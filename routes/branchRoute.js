@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const multer = require("multer");
-const Branch = require("../models/Branch");
+const BranchInfo = require("../models/BranchInfo");
 
 // Multer config
 const storage = multer.diskStorage({
@@ -13,7 +13,7 @@ const upload = multer({ storage });
 // Get Branch Details
 router.get("/", async (req, res) => {
   try {
-    const branch = await Branch.findOne();
+    const branch = await BranchInfo.findOne();
     res.json({ message: "Branch details fetched successfully", branch });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -24,7 +24,7 @@ router.get("/", async (req, res) => {
 router.put("/title-description", async (req, res) => {
   const { title, description } = req.body;
   try {
-    const branch = await Branch.findOneAndUpdate(
+    const branch = await BranchInfo.findOneAndUpdate(
       {},
       { title, description },
       { new: true, upsert: true }
@@ -39,7 +39,7 @@ router.put("/title-description", async (req, res) => {
 router.post("/add", upload.single("image"), async (req, res) => {
   const { location } = req.body;
   try {
-    const branch = await Branch.findOneAndUpdate(
+    const branch = await BranchInfo.findOneAndUpdate(
       {},
       { $push: { branches: { location, image: req.file.path } } },
       { new: true, upsert: true }
@@ -58,7 +58,7 @@ router.put("/edit/:branchId", upload.single("image"), async (req, res) => {
     const updateData = { "branches.$.location": location };
     if (req.file) updateData["branches.$.image"] = req.file.path;
 
-    const branch = await Branch.findOneAndUpdate(
+    const branch = await BranchInfo.findOneAndUpdate(
       { "branches._id": branchId },
       { $set: updateData },
       { new: true }
@@ -73,7 +73,7 @@ router.put("/edit/:branchId", upload.single("image"), async (req, res) => {
 router.delete("/delete/:branchId", async (req, res) => {
   const { branchId } = req.params;
   try {
-    const branch = await Branch.findOneAndUpdate(
+    const branch = await BranchInfo.findOneAndUpdate(
       {},
       { $pull: { branches: { _id: branchId } } },
       { new: true }
@@ -89,7 +89,7 @@ router.put("/toggle-featured/:branchId", async (req, res) => {
   const { branchId } = req.params;
 
   try {
-    const branch = await Branch.findOne();
+    const branch = await BranchInfo.findOne();
     if (!branch) {
       return res.status(404).json({ error: "Branch not found" });
     }

@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const BranchInfo = require("../models/BranchInfo");
+const Branch = require("../models/Branch");
 const dotenv = require("dotenv");
 
 dotenv.config({ path: __dirname + '/../.env' });
@@ -11,11 +11,11 @@ const seedBranches = async () => {
       useUnifiedTopology: true,
     });
 
-    // Remove existing branch info data
-    await BranchInfo.deleteMany({});
+    // Remove existing branch data
+    await Branch.deleteMany({});
 
-    // Create new branch info data
-    const branchData = new BranchInfo({
+    // Create new branch data
+    const branchData = new Branch({
       title: "Find Us",
       description: "Visit our branches for the best coffee experience.",
       branches: [
