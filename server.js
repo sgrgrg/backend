@@ -17,7 +17,7 @@ dotenv.config();
 const app = express();
 // Enable CORS for all routes
 app.use(cors({
-    origin: [ 'https://coffeehouse-1.onrender.com','https://coffeehouse-4yii.onrender.com','http://localhost:5173'],
+    origin: [ 'https://frontend-production-b728.up.railway.app','https://coffeehouse-4yii.onrender.com','http://localhost:5173'],
     methods: ['GET', 'POST', 'PUT', 'DELETE','PATCH'], // Allowed methods
     allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
   }));
