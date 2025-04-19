@@ -11,8 +11,8 @@ router.get("/", async (req, res) => {
 // Create a new message
 router.post("/", async (req, res) => {
   try {
-    const { name, email, message } = req.body;
-    const newMessage = new Message({ name, email, message });
+    const { name, email, subject, content } = req.body;
+    const newMessage = new Message({ name, email, subject, content });
     await newMessage.save();
     res.status(201).json({ message: "Message sent successfully", newMessage });
   } catch (error) {
