@@ -14,6 +14,9 @@ const authRoute = require('./routes/authRoute');
 const menuRoute = require("./routes/menuRoute");
 const reviewRoute = require('./routes/reviewRoute');
 const userRoute = require('./routes/userRoute');
+const chokidar = require('chokidar');
+const { exec } = require('child_process');
+const path = require('path');
 
 const port = 5000;
 
@@ -69,6 +72,62 @@ io.on("connection", (socket) => {
 mongoose.connect(process.env.MONGO_URI)
     .then(() => console.log("Connected to MongoDB"))
     .catch(err => console.error("Could not connect to MongoDB", err));
+
+// Watcher for uploads directory to auto push changes to GitHub
+const uploadsDir = path.join(__dirname, 'uploads');
+let pushTimeout = null;
+const debounceDelay = 5000; // 5 seconds debounce
+
+function gitPushChanges() {
+  console.log('Detected changes in uploads. Preparing to push to GitHub...');
+  exec('git add .', { cwd: __dirname }, (err, stdout, stderr) => {
+    if (err) {
+      console.error('Error during git add:', err);
+      return;
+    }
+    exec('git commit -m "Auto commit: uploads changed"', { cwd: __dirname }, (err, stdout, stderr) => {
+      if (err) {
+        if (stderr.includes('nothing to commit')) {
+          console.log('No changes to commit.');
+        } else {
+          console.error('Error during git commit:', err);
+        }
+        return;
+      }
+      exec('git push', { cwd: __dirname }, (err, stdout, stderr) => {
+        if (err) {
+          console.error('Error during git push:', err);
+          return;
+        }
+        console.log('Successfully pushed changes to GitHub.');
+      });
+    });
+  });
+}
+
+const watcher = chokidar.watch(uploadsDir, {
+  persistent: true,
+  ignoreInitial: true,
+});
+
+watcher
+  .on('add', filePath => {
+    console.log(`File added: ${filePath}`);
+    if (pushTimeout) clearTimeout(pushTimeout);
+    pushTimeout = setTimeout(gitPushChanges, debounceDelay);
+  })
+  .on('change', filePath => {
+    console.log(`File changed: ${filePath}`);
+    if (pushTimeout) clearTimeout(pushTimeout);
+    pushTimeout = setTimeout(gitPushChanges, debounceDelay);
+  })
+  .on('unlink', filePath => {
+    console.log(`File removed: ${filePath}`);
+    if (pushTimeout) clearTimeout(pushTimeout);
+    pushTimeout = setTimeout(gitPushChanges, debounceDelay);
+  });
+
+console.log(`Watching for changes in ${uploadsDir}...`);
 
 // Example Route
 app.get("/", (req, res) => {
