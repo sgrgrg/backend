@@ -5,101 +5,106 @@ const bodyParser = require("body-parser");
 const dotenv = require("dotenv");
 const http = require("http");
 const { Server } = require("socket.io");
+const chokidar = require("chokidar");
+const { exec } = require("child_process");
+const path = require("path");
+
+// Route imports
 const bannerRoute = require("./routes/bannerRoute");
-const serviceRoute = require('./routes/serviceRoute');
+const serviceRoute = require("./routes/serviceRoute");
 const titleDescribeServiceRoute = require("./routes/title_describe_Service_route");
-const branchRoute = require('./routes/branchRoute');
-const messageRouteModule = require('./routes/messageRoute');
-const authRoute = require('./routes/authRoute');
+const branchRoute = require("./routes/branchRoute");
+const messageRouteModule = require("./routes/messageRoute");
+const authRoute = require("./routes/authRoute");
 const menuRoute = require("./routes/menuRoute");
-const reviewRoute = require('./routes/reviewRoute');
-const userRoute = require('./routes/userRoute');
-const chokidar = require('chokidar');
-const { exec } = require('child_process');
-const path = require('path');
+const reviewRoute = require("./routes/reviewRoute");
+const userRoute = require("./routes/userRoute");
 
-const port = 5000;
-
+// Load environment variables
 dotenv.config();
+
 const app = express();
-// Enable CORS for all routes
-app.use(cors({
-    origin: [ 'https://frontend-production-b728.up.railway.app','https://coffeehouse-4yii.onrender.com','http://localhost:5173'],
-    methods: ['GET', 'POST', 'PUT', 'DELETE','PATCH'], // Allowed methods
-    allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
-    credentials: true
-  }));
-  
-// Middleware
-// app.use(cors());  // Removed duplicate cors middleware call
-app.use(bodyParser.json());
-app.use("/api/banner", bannerRoute);
-app.use("/uploads", express.static("uploads"));
-app.use('/api/service', serviceRoute);
-app.use("/api/service/title-describe", titleDescribeServiceRoute);
-app.use('/api/admin/branches', branchRoute);
-app.use('/api/admin/messages', messageRouteModule.router);
-app.use('/api/auth', authRoute);
-app.use('/api/user', userRoute);
-
-app.use("/api/menu", menuRoute);
-app.use('/api/reviews', reviewRoute);
-
-// Create HTTP server and wrap Express app
 const httpServer = http.createServer(app);
 
-// Initialize Socket.IO server
+// Middleware
+app.use(cors({
+  origin: [
+    'https://frontend-production-b728.up.railway.app',
+    'https://coffeehouse-4yii.onrender.com',
+    'http://localhost:5173'
+  ],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+}));
+app.use(bodyParser.json());
+
+// Static files
+app.use("/uploads", express.static("uploads"));
+
+// API routes
+app.use("/api/banner", bannerRoute);
+app.use("/api/service", serviceRoute);
+app.use("/api/service/title-describe", titleDescribeServiceRoute);
+app.use("/api/admin/branches", branchRoute);
+app.use("/api/admin/messages", messageRouteModule.router);
+app.use("/api/auth", authRoute);
+app.use("/api/user", userRoute);
+app.use("/api/menu", menuRoute);
+app.use("/api/reviews", reviewRoute);
+
+// Socket.IO setup
 const io = new Server(httpServer, {
   cors: {
-    origin: [ 'https://frontend-production-b728.up.railway.app','https://coffeehouse-4yii.onrender.com','http://localhost:5173'],
-    methods: ['GET', 'POST', 'PUT', 'DELETE','PATCH'],
+    origin: [
+      'https://frontend-production-b728.up.railway.app',
+      'https://coffeehouse-4yii.onrender.com',
+      'http://localhost:5173'
+    ],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH']
   }
 });
-
-// Pass io instance to messageRoute to enable socket event emitting
 messageRouteModule.setSocketIO(io);
 
-// Socket.IO connection handler
 io.on("connection", (socket) => {
-  console.log("A user connected: " + socket.id);
+  console.log("User connected:", socket.id);
 
   socket.on("disconnect", () => {
-    console.log("User disconnected: " + socket.id);
+    console.log("User disconnected:", socket.id);
   });
 });
 
-// MongoDB Connection
+// MongoDB connection
 mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log("Connected to MongoDB"))
-    .catch(err => console.error("Could not connect to MongoDB", err));
+  .then(() => console.log("Connected to MongoDB"))
+  .catch((err) => console.error("MongoDB connection error:", err));
 
-// Watcher for uploads directory to auto push changes to GitHub
-const uploadsDir = path.join(__dirname, 'uploads');
+// File watcher for auto-pushing to GitHub
+const uploadsDir = path.join(__dirname, "uploads");
 let pushTimeout = null;
-const debounceDelay = 5000; // 5 seconds debounce
+const debounceDelay = 5000;
 
 function gitPushChanges() {
-  console.log('Detected changes in uploads. Preparing to push to GitHub...');
-  exec('git add .', { cwd: __dirname }, (err, stdout, stderr) => {
-    if (err) {
-      console.error('Error during git add:', err);
-      return;
-    }
-    exec('git commit -m "Auto commit: uploads changed"', { cwd: __dirname }, (err, stdout, stderr) => {
-      if (err) {
-        if (stderr.includes('nothing to commit')) {
-          console.log('No changes to commit.');
-        } else {
-          console.error('Error during git commit:', err);
-        }
-        return;
-      }
-      exec('git push', { cwd: __dirname }, (err, stdout, stderr) => {
+  console.log("Detected changes. Preparing to push to GitHub...");
+
+  exec('git config user.name "sagarr" && git config user.email "sgrgrg34@gmail.com"', { cwd: __dirname }, (err) => {
+    if (err) return console.error("Git config error:", err);
+
+    exec("git add .", { cwd: __dirname }, (err) => {
+      if (err) return console.error("Git add error:", err);
+
+      exec('git commit -m "Auto commit: uploads changed"', { cwd: __dirname }, (err, stdout, stderr) => {
         if (err) {
-          console.error('Error during git push:', err);
-          return;
+          if (stderr.includes("nothing to commit")) {
+            return console.log("No changes to commit.");
+          }
+          return console.error("Git commit error:", err);
         }
-        console.log('Successfully pushed changes to GitHub.');
+
+        exec("git push", { cwd: __dirname }, (err) => {
+          if (err) return console.error("Git push error:", err);
+          console.log("Changes pushed to GitHub.");
+        });
       });
     });
   });
@@ -107,33 +112,35 @@ function gitPushChanges() {
 
 const watcher = chokidar.watch(uploadsDir, {
   persistent: true,
-  ignoreInitial: true,
+  ignoreInitial: true
 });
 
 watcher
-  .on('add', filePath => {
+  .on("add", (filePath) => {
     console.log(`File added: ${filePath}`);
-    if (pushTimeout) clearTimeout(pushTimeout);
+    clearTimeout(pushTimeout);
     pushTimeout = setTimeout(gitPushChanges, debounceDelay);
   })
-  .on('change', filePath => {
+  .on("change", (filePath) => {
     console.log(`File changed: ${filePath}`);
-    if (pushTimeout) clearTimeout(pushTimeout);
+    clearTimeout(pushTimeout);
     pushTimeout = setTimeout(gitPushChanges, debounceDelay);
   })
-  .on('unlink', filePath => {
+  .on("unlink", (filePath) => {
     console.log(`File removed: ${filePath}`);
-    if (pushTimeout) clearTimeout(pushTimeout);
+    clearTimeout(pushTimeout);
     pushTimeout = setTimeout(gitPushChanges, debounceDelay);
   });
 
 console.log(`Watching for changes in ${uploadsDir}...`);
 
-// Example Route
+// Default route
 app.get("/", (req, res) => {
-    res.send("Server is running!");
+  res.send("Server is running!");
 });
 
-// Start the HTTP server
+// Start server
 const PORT = process.env.PORT || 5000;
-httpServer.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+httpServer.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
+});
