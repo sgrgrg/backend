@@ -101,7 +101,7 @@ function gitPushChanges() {
           return console.error("Git commit error:", err);
         }
 
-        exec("git push", { cwd: __dirname }, (err) => {
+        exec("git push origin main", { cwd: __dirname }, (err) => {
           if (err) return console.error("Git push error:", err);
           console.log("Changes pushed to GitHub.");
         });
