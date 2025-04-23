@@ -1,10 +1,11 @@
 const express = require("express");
 const multer = require("multer");
 const { Menu, TitleDescribe } = require("../models/Menu");
+const storage = require("../config/multerStorage");
 
 const router = express.Router();
 
-const upload = multer({ dest: "uploads/" });
+const upload = multer({ storage });
 
 // Get all menu items and title/description
 router.get("/", async (req, res) => {

@@ -2,16 +2,7 @@ const express = require("express");
 const router = express.Router();
 const multer = require("multer");
 const Banner = require("../models/Banner");
-
-// Configure Multer
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/");
-  },
-  filename: (req, file, cb) => {
-    cb(null, `${Date.now()}-${file.originalname}`);
-  },
-});
+const storage = require("../config/multerStorage");
 
 const upload = multer({ storage });
 
