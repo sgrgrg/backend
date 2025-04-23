@@ -8,6 +8,26 @@ const userSchema = new mongoose.Schema({
     unique: true,
     trim: true,
   },
+  name: {
+    type: String,
+    default: "",
+  },
+  address: {
+    type: String,
+    default: "",
+  },
+  profilePicture: {
+    type: String,
+    default: "",
+  },
+  profileBackgroundPicture: {
+    type: String,
+    default: "",
+  },
+  phoneNumber: {
+    type: String,
+    default: "",
+  },
   email: {
     type: String,
     required: true,

@@ -13,6 +13,7 @@ const messageRouteModule = require('./routes/messageRoute');
 const authRoute = require('./routes/authRoute');
 const menuRoute = require("./routes/menuRoute");
 const reviewRoute = require('./routes/reviewRoute');
+const userRoute = require('./routes/userRoute');
 
 const port = 5000;
 
@@ -35,6 +36,7 @@ app.use("/api/service/title-describe", titleDescribeServiceRoute);
 app.use('/api/admin/branches', branchRoute);
 app.use('/api/admin/messages', messageRouteModule.router);
 app.use('/api/auth', authRoute);
+app.use('/api/user', userRoute);
 
 app.use("/api/menu", menuRoute);
 app.use('/api/reviews', reviewRoute);
