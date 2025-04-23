@@ -1,8 +1,18 @@
+
 const express = require("express");
 const router = express.Router();
 const multer = require("multer");
 const User = require("../models/User");
 const authMiddleware = require("../middleware/authMiddleware"); // Assuming auth middleware exists
+
+// Simple admin check middleware
+const adminMiddleware = (req, res, next) => {
+  if (req.user && req.user.isAdmin) {
+    next();
+  } else {
+    res.status(403).json({ message: "Admin access required" });
+  }
+};
 
 // Multer config for profile picture uploads
 const storage = multer.diskStorage({
@@ -48,5 +58,57 @@ router.put("/profile", authMiddleware, upload.fields([
     res.status(500).json({ error: err.message });
   }
 });
+
+// Admin: Get all users
+router.get("/admin/users", authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const users = await User.find().select("-password");
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Admin: Update user by ID
+router.put("/admin/users/:id", authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const updateData = {
+      name: req.body.name,
+      address: req.body.address,
+      phoneNumber: req.body.phoneNumber,
+      email: req.body.email,
+      isBlocked: req.body.isBlocked,
+    };
+    const updatedUser = await User.findByIdAndUpdate(req.params.id, updateData, { new: true }).select("-password");
+    if (!updatedUser) return res.status(404).json({ message: "User not found" });
+    res.json(updatedUser);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Admin: Delete user by ID
+router.delete("/admin/users/:id", authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const deletedUser = await User.findByIdAndDelete(req.params.id);
+    if (!deletedUser) return res.status(404).json({ message: "User not found" });
+    res.json({ message: "User deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Admin: Block or unblock user by ID
+router.put("/admin/users/:id/block", authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const { block } = req.body; // boolean: true to block, false to unblock
+    const updatedUser = await User.findByIdAndUpdate(req.params.id, { isBlocked: block }, { new: true }).select("-password");
+    if (!updatedUser) return res.status(404).json({ message: "User not found" });
+    res.json(updatedUser);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 
 module.exports = router;
