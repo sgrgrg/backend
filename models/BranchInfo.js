@@ -13,6 +13,26 @@ const branchSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  fbLink: {
+    type: String,
+    default: "",
+  },
+  instaLink: {
+    type: String,
+    default: "",
+  },
+  youtubeLink: {
+    type: String,
+    default: "",
+  },
+  email: {
+    type: String,
+    default: "",
+  },
+  isMain: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const branchInfoSchema = new mongoose.Schema({

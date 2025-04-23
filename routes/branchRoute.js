@@ -37,11 +37,21 @@ router.put("/title-description", async (req, res) => {
 
 // Add a new branch
 router.post("/add", upload.single("image"), async (req, res) => {
-  const { location } = req.body;
+  const { location, fbLink, instaLink, youtubeLink, email, isMain } = req.body;
   try {
+    const branchData = {
+      location,
+      image: req.file ? req.file.path : "",
+      fbLink: fbLink || "",
+      instaLink: instaLink || "",
+      youtubeLink: youtubeLink || "",
+      email: email || "",
+      isMain: isMain === "true" || isMain === true,
+      featured: false,
+    };
     const branch = await BranchInfo.findOneAndUpdate(
       {},
-      { $push: { branches: { location, image: req.file.path } } },
+      { $push: { branches: branchData } },
       { new: true, upsert: true }
     );
     res.json({ message: "New branch added successfully", branch });
@@ -52,10 +62,17 @@ router.post("/add", upload.single("image"), async (req, res) => {
 
 // Edit a branch
 router.put("/edit/:branchId", upload.single("image"), async (req, res) => {
-  const { location } = req.body;
+  const { location, fbLink, instaLink, youtubeLink, email, isMain } = req.body;
   const { branchId } = req.params;
   try {
-    const updateData = { "branches.$.location": location };
+    const updateData = {
+      "branches.$.location": location,
+      "branches.$.fbLink": fbLink || "",
+      "branches.$.instaLink": instaLink || "",
+      "branches.$.youtubeLink": youtubeLink || "",
+      "branches.$.email": email || "",
+      "branches.$.isMain": isMain === "true" || isMain === true,
+    };
     if (req.file) updateData["branches.$.image"] = req.file.path;
 
     const branch = await BranchInfo.findOneAndUpdate(
