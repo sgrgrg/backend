@@ -3,11 +3,13 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const dotenv = require("dotenv");
+const http = require("http");
+const { Server } = require("socket.io");
 const bannerRoute = require("./routes/bannerRoute");
 const serviceRoute = require('./routes/serviceRoute');
 const titleDescribeServiceRoute = require("./routes/title_describe_Service_route");
 const branchRoute = require('./routes/branchRoute');
-const messageRoute = require('./routes/messageRoute');
+const messageRouteModule = require('./routes/messageRoute');
 const menuRoute = require("./routes/menuRoute");
 const reviewRoute = require('./routes/reviewRoute');
 
@@ -30,10 +32,33 @@ app.use("/uploads", express.static("uploads"));
 app.use('/api/service', serviceRoute);
 app.use("/api/service/title-describe", titleDescribeServiceRoute);
 app.use('/api/admin/branches', branchRoute);
-app.use('/api/admin/messages', messageRoute);
+app.use('/api/admin/messages', messageRouteModule.router);
+
 app.use("/api/menu", menuRoute);
 app.use('/api/reviews', reviewRoute);
 
+// Create HTTP server and wrap Express app
+const httpServer = http.createServer(app);
+
+// Initialize Socket.IO server
+const io = new Server(httpServer, {
+  cors: {
+    origin: [ 'https://frontend-production-b728.up.railway.app','https://coffeehouse-4yii.onrender.com','http://localhost:5173'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE','PATCH'],
+  }
+});
+
+// Pass io instance to messageRoute to enable socket event emitting
+messageRouteModule.setSocketIO(io);
+
+// Socket.IO connection handler
+io.on("connection", (socket) => {
+  console.log("A user connected: " + socket.id);
+
+  socket.on("disconnect", () => {
+    console.log("User disconnected: " + socket.id);
+  });
+});
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGO_URI)
@@ -45,6 +70,6 @@ app.get("/", (req, res) => {
     res.send("Server is running!");
 });
 
-// Start the Server
+// Start the HTTP server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+httpServer.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));

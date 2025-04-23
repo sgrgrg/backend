@@ -2,6 +2,12 @@ const express = require("express");
 const router = express.Router();
 const Message = require("../models/messageModel");
 
+// We will import io instance from server.js to emit events
+let io;
+const setSocketIO = (ioInstance) => {
+  io = ioInstance;
+};
+
 // Get all messages
 router.get("/", async (req, res) => {
   const messages = await Message.find();
@@ -14,6 +20,12 @@ router.post("/", async (req, res) => {
     const { name, email, subject, content } = req.body;
     const newMessage = new Message({ name, email, subject, content });
     await newMessage.save();
+
+    // Emit newMessage event to all connected clients
+    if (io) {
+      io.emit("newMessage", newMessage);
+    }
+
     res.status(201).json({ message: "Message sent successfully", newMessage });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -29,6 +41,12 @@ router.patch("/:id/reply", async (req, res) => {
     { replied: true, replyContent },
     { new: true }
   );
+
+  // Emit messageReply event to all connected clients
+  if (io) {
+    io.emit("messageReply", message);
+  }
+
   res.json(message);
 });
 
@@ -50,4 +68,4 @@ router.patch("/:id/block", async (req, res) => {
   res.json(message);
 });
 
-module.exports = router;
+module.exports = { router, setSocketIO };
