@@ -21,7 +21,7 @@ dotenv.config();
 const app = express();
 // Enable CORS for all routes
 app.use(cors({
-    origin: [ 'https://frontend-production-b728.up.railway.app','https://coffeehouse-4yii.onrender.com','http://localhost:5173'],
+    origin: [ 'https://frontend-production-b728.up.railway.app','http://localhost:5000','http://localhost:5173'],
     methods: ['GET', 'POST', 'PUT', 'DELETE','PATCH'], // Allowed methods
     allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
     credentials: true
@@ -48,7 +48,7 @@ const httpServer = http.createServer(app);
 // Initialize Socket.IO server
 const io = new Server(httpServer, {
   cors: {
-    origin: [ 'https://frontend-production-b728.up.railway.app','https://coffeehouse-4yii.onrender.com','http://localhost:5173'],
+    origin: [ 'https://frontend-production-b728.up.railway.app','http://localhost:5000','http://localhost:5173'],
     methods: ['GET', 'POST', 'PUT', 'DELETE','PATCH'],
   }
 });
