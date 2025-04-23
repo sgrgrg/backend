@@ -24,10 +24,11 @@ app.use(cors({
     origin: [ 'https://frontend-production-b728.up.railway.app','https://coffeehouse-4yii.onrender.com','http://localhost:5173'],
     methods: ['GET', 'POST', 'PUT', 'DELETE','PATCH'], // Allowed methods
     allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
+    credentials: true
   }));
   
 // Middleware
-app.use(cors());
+// app.use(cors());  // Removed duplicate cors middleware call
 app.use(bodyParser.json());
 app.use("/api/banner", bannerRoute);
 app.use("/uploads", express.static("uploads"));
