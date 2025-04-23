@@ -10,6 +10,7 @@ const serviceRoute = require('./routes/serviceRoute');
 const titleDescribeServiceRoute = require("./routes/title_describe_Service_route");
 const branchRoute = require('./routes/branchRoute');
 const messageRouteModule = require('./routes/messageRoute');
+const authRoute = require('./routes/authRoute');
 const menuRoute = require("./routes/menuRoute");
 const reviewRoute = require('./routes/reviewRoute');
 
@@ -33,6 +34,7 @@ app.use('/api/service', serviceRoute);
 app.use("/api/service/title-describe", titleDescribeServiceRoute);
 app.use('/api/admin/branches', branchRoute);
 app.use('/api/admin/messages', messageRouteModule.router);
+app.use('/api/auth', authRoute);
 
 app.use("/api/menu", menuRoute);
 app.use('/api/reviews', reviewRoute);
