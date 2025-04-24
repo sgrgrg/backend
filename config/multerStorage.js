@@ -3,7 +3,7 @@ const path = require("path");
 const fs = require("fs");
 
 // Use environment variable or default to a persistent absolute path outside backend directory
-const UPLOADS_DIR = process.env.UPLOADS_DIR || path.resolve(__dirname, "../../uploads");
+const UPLOADS_DIR = process.env.UPLOADS_DIR || path.resolve(__dirname, "../uploads");
 
 // Ensure the uploads directory exists
 if (!fs.existsSync(UPLOADS_DIR)) {

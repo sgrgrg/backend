@@ -1,11 +1,11 @@
 const express = require("express");
 const multer = require("multer");
 const { Menu, TitleDescribe } = require("../models/Menu");
-const storage = require("../config/multerStorage");
+const { deleteFile } = require("../utils/fileUtils");
 
 const router = express.Router();
 
-const upload = multer({ storage });
+const upload = multer({ dest: "uploads/" });
 
 // Get all menu items and title/description
 router.get("/", async (req, res) => {
@@ -56,6 +56,15 @@ router.put("/edit/:id", upload.single("image"), async (req, res) => {
     const { name, price } = req.body;
     const image = req.file ? req.file.path : undefined;
 
+    const menuItem = await Menu.findById(id);
+    if (!menuItem) {
+      return res.status(404).json({ error: "Menu item not found" });
+    }
+
+    if (image && menuItem.image) {
+      deleteFile(menuItem.image);
+    }
+
     const updatedFields = { name, price };
     if (image) updatedFields.image = image;
 
@@ -72,6 +81,15 @@ router.put("/edit/:id", upload.single("image"), async (req, res) => {
 router.delete("/delete/:id", async (req, res) => {
   try {
     const { id } = req.params;
+    const menuItem = await Menu.findById(id);
+    if (!menuItem) {
+      return res.status(404).json({ error: "Menu item not found" });
+    }
+
+    if (menuItem.image) {
+      deleteFile(menuItem.image);
+    }
+
     await Menu.findByIdAndDelete(id);
 
     const menuItems = await Menu.find();

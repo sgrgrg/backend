@@ -14,6 +14,11 @@ const authRoute = require('./routes/authRoute');
 const menuRoute = require("./routes/menuRoute");
 const reviewRoute = require('./routes/reviewRoute');
 const userRoute = require('./routes/userRoute');
+const aboutRoute = require('./routes/aboutRoute');
+const teamRoute = require('./routes/teamRoute');
+const faqRoute = require('./routes/faqRoute');
+const careerRoute = require('./routes/careerRoute');
+const uploadRoute = require('./routes/uploadRoute');
 
 const port = 5000;
 
@@ -41,6 +46,18 @@ app.use('/api/user', userRoute);
 
 app.use("/api/menu", menuRoute);
 app.use('/api/reviews', reviewRoute);
+app.use("/api/about", aboutRoute);
+app.use('/api/team', teamRoute);
+app.use('/api/faqs', faqRoute);
+app.use('/api/careers', careerRoute);
+app.use('/api/upload', uploadRoute);
+
+const trainingRoute = require('./routes/trainingRoute');
+const studentSuccessStoryRoute = require('./routes/studentSuccessStoryRoute');
+const eventRoute = require('./routes/eventRoute');
+app.use('/api/trainings', trainingRoute);
+app.use('/api/student-success-stories', studentSuccessStoryRoute);
+app.use('/api/events', eventRoute);
 
 // Create HTTP server and wrap Express app
 const httpServer = http.createServer(app);

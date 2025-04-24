@@ -1,6 +1,7 @@
 const express = require('express');
 const multer = require('multer');
 const Service = require('../models/Service');
+const { deleteFile } = require('../utils/fileUtils');
 const router = express.Router();
 
 // Multer Storage Configuration
@@ -88,10 +89,18 @@ router.put('/:id', upload.single('image'), async (req, res) => {
       service.isFeatured = false;
     }
 
+    // Delete old image if new image uploaded
+    if (req.file && service.image) {
+      // Normalize image path for deletion
+      const imagePath = service.image.startsWith('/uploads/') ? service.image.substring(1) : service.image;
+      console.log(`Deleting old image file at path: ${imagePath}`);
+      deleteFile(imagePath);
+      service.image = `/uploads/${req.file.filename}`;
+    }
+
     // Update fields if provided
     if (title) service.title = title;
     if (description) service.description = description;
-    if (req.file) service.image = `/uploads/${req.file.filename}`;
     if (isFeatured !== undefined) service.isFeatured = Boolean(isFeatured);
 
     const updatedService = await service.save();
@@ -109,11 +118,17 @@ router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params;
 
-    const service = await Service.findByIdAndDelete(id);
+    const service = await Service.findById(id);
     if (!service) {
       return res.status(404).json({ message: 'Service not found' });
     }
 
+    // Delete image file
+    if (service.image) {
+      deleteFile(service.image);
+    }
+
+    await Service.findByIdAndDelete(id);
     res.status(200).json({ message: 'Service deleted successfully!' });
   } catch (error) {
     res.status(500).json({ message: 'Error deleting service', error: error.message });

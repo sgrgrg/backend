@@ -4,7 +4,6 @@ const router = express.Router();
 const multer = require("multer");
 const User = require("../models/User");
 const authMiddleware = require("../middleware/authMiddleware"); // Assuming auth middleware exists
-const storage = require("../config/multerStorage");
 
 // Simple admin check middleware
 const adminMiddleware = (req, res, next) => {
@@ -16,6 +15,10 @@ const adminMiddleware = (req, res, next) => {
 };
 
 // Multer config for profile picture uploads
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, "uploads/"),
+  filename: (req, file, cb) => cb(null, `${Date.now()}-${file.originalname}`),
+});
 const upload = multer({ storage });
 
 // Get current user profile
@@ -75,6 +78,7 @@ router.put("/admin/users/:id", authMiddleware, adminMiddleware, async (req, res)
       phoneNumber: req.body.phoneNumber,
       email: req.body.email,
       isBlocked: req.body.isBlocked,
+      isAdmin: req.body.isAdmin,  // Added support for isAdmin update
     };
     const updatedUser = await User.findByIdAndUpdate(req.params.id, updateData, { new: true }).select("-password");
     if (!updatedUser) return res.status(404).json({ message: "User not found" });
