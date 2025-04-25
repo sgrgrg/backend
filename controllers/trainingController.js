@@ -53,16 +53,15 @@ const updateTraining = async (req, res) => {
   }
 };
 
-// Delete training
 const deleteTraining = async (req, res) => {
   try {
-    const training = await Training.findById(req.params.id);
-    if (!training) return res.status(404).json({ message: 'Training not found' });
+    const deletedTraining = await Training.findByIdAndDelete(req.params.id);
+    if (!deletedTraining) return res.status(404).json({ message: 'Training not found' });
 
-    await training.remove();
     res.json({ message: 'Training deleted' });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Error deleting training:', error);
+    res.status(500).json({ message: 'Failed to delete training', error: error.message });
   }
 };
 

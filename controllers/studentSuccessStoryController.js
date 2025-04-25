@@ -79,21 +79,38 @@ const updateStory = async (req, res) => {
   }
 };
 
-// Delete story
 const deleteStory = async (req, res) => {
+  console.log('Delete story request received for ID:', req.params.id);
   try {
     const story = await StudentSuccessStory.findById(req.params.id);
-    if (!story) return res.status(404).json({ message: 'Story not found' });
+    if (!story) {
+      console.log('Story not found for ID:', req.params.id);
+      return res.status(404).json({ message: 'Story not found' });
+    }
+    console.log('Story found:', story);
 
     // Delete photo file if exists
     if (story.photo) {
-      const photoPath = path.join(__dirname, '..', story.photo);
-      deleteFile(photoPath);
+      const photoPath = path.resolve(__dirname, '..', '.' + story.photo);
+      try {
+        console.log('Attempting to delete photo file at:', photoPath);
+        await deleteFile(photoPath);
+      } catch (err) {
+        console.error('Error deleting photo file:', err);
+      }
     }
 
-    await story.remove();
+    try {
+      await story.deleteOne();
+      console.log('Story removed from database:', req.params.id);
+    } catch (removeErr) {
+      console.error('Error removing story from database:', removeErr);
+      return res.status(500).json({ message: 'Failed to remove story from database' });
+    }
+
     res.json({ message: 'Story deleted' });
   } catch (error) {
+    console.error('Error in deleteStory controller:', error);
     res.status(500).json({ message: error.message });
   }
 };
