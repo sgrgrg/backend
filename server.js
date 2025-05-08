@@ -65,7 +65,7 @@ const httpServer = http.createServer(app);
 // Initialize Socket.IO server
 const io = new Server(httpServer, {
   cors: {
-    origin: [ 'https://frontend-production-b728.up.railway.app','http://localhost:5000','http://localhost:5173'],
+    origin: [ 'https://frontend-production-b728.up.railway.app','http://localhost:5000','http://localhost:5173','https://coffeehouse-1.onrender.com'],
     methods: ['GET', 'POST', 'PUT', 'DELETE','PATCH'],
   }
 });
